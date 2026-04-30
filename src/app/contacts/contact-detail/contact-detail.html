@@ -1,0 +1,18 @@
+<div class="panel panel-default">
+   <h2 class="panel-title pull-left">Contact Details</h2>
+  <div class="panel-heading clearfix">
+    <h3 class="panel-title pull-left">{{ contact?.name }}</h3>
+  </div>
+  <div class="panel-body">
+    <div class="btn-group btn-group-sm contact-actions" role="group" aria-label="Contact actions">
+      <a class="btn btn-primary" href="#">Edit</a>
+      <a class="btn btn-danger" href="#">Delete</a>
+    </div>
+    <dl class="dl-horizontal contact-details">
+      <dt>Email</dt>
+      <dd>{{ contact?.email }}</dd>
+      <dt>Phone</dt>
+      <dd>{{ contact?.phone }}</dd>
+    </dl>
+  </div>
+</div>

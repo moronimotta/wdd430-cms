@@ -1,0 +1,13 @@
+.contact-image {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}
+
+.contact-actions {
+  margin-bottom: 15px;
+}
+
+.contact-details {
+  margin-bottom: 0;
+}

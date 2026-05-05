@@ -1,3 +1,20 @@
+.contact-detail-image {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  display: block;
+  margin-bottom: 1rem;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.contact-actions {
+  margin-bottom: 1rem;
+}
+
+.contact-details {
+  margin-bottom: 0;
+}
 .contact-image {
   width: 64px;
   height: 64px;

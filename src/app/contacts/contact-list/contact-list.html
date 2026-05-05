@@ -5,10 +5,7 @@
   </div>
   <div class="panel-body">
     <div class="list-group">
-      <a class="list-group-item clearfix" href="#" *ngFor="let contact of contacts">
-        <img class="img-circle pull-left contact-image" [src]="contact.imageUrl" [alt]="contact.name" />
-        <h4 class="list-group-item-heading contact-name">{{ contact.name }}</h4>
-      </a>
+      <cms-contact-item *ngFor="let contact of contacts" [contact]="contact" (click)="onSelected(contact)"></cms-contact-item>
     </div>
   </div>
 </div>

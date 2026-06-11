@@ -1,0 +1,15 @@
+.contact-image {
+  width: 48px;
+  height: 48px;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.contact-name {
+  line-height: 48px;
+  margin: 0;
+}
+
+.panel-heading .btn {
+  margin-top: -2px;
+}

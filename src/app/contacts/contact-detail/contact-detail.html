@@ -1,0 +1,18 @@
+<div class="panel panel-default">
+  <div class="panel-heading clearfix">
+    <h3 class="panel-title pull-left">{{ contact?.name }}</h3>
+  </div>
+  <div class="panel-body">
+    <img class="contact-detail-image" [src]="contact?.imageUrl" [alt]="contact?.name" />
+    <div class="btn-group btn-group-sm contact-actions" role="group" aria-label="Contact actions">
+      <a class="btn btn-primary" [routerLink]="['/contacts', contact?.id, 'edit']">Edit</a>
+      <a class="btn btn-danger" (click)="onDelete()">Delete</a>
+    </div>
+    <dl class="dl-horizontal contact-details">
+      <dt>Email</dt>
+      <dd>{{ contact?.email }}</dd>
+      <dt>Phone</dt>
+      <dd>{{ contact?.phone }}</dd>
+    </dl>
+  </div>
+</div>

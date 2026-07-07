@@ -1,22 +1,33 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Document } from './document.model';
-import { MOCKDOCUMENTS } from './MOCKDOCUMENTS';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DocumentService {
+  private readonly documentsUrl = 'https://wdd430-26dff-default-rtdb.firebaseio.com/documents.json';
+
   documents: Document[] = [];
   documentListChangedEvent = new Subject<Document[]>();
   maxDocumentId: number = 0;
 
-  constructor() {
-    this.documents = MOCKDOCUMENTS;
-    this.maxDocumentId = this.getMaxId();
-  }
+  constructor(private httpClient: HttpClient) {}
 
   getDocuments(): Document[] {
+    this.httpClient.get<Document[]>(this.documentsUrl).subscribe(
+      (documents: Document[]) => {
+        this.documents = documents ?? [];
+        this.maxDocumentId = this.getMaxId();
+        this.documents.sort((firstDocument: Document, secondDocument: Document) => firstDocument.name.localeCompare(secondDocument.name));
+        this.documentListChangedEvent.next(this.documents.slice());
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
+
     return this.documents.slice();
   }
 
@@ -45,7 +56,7 @@ export class DocumentService {
     this.maxDocumentId++;
     newDocument.id = this.maxDocumentId;
     this.documents.push(newDocument);
-    this.documentListChangedEvent.next(this.documents.slice());
+    this.storeDocuments();
   }
 
   updateDocument(originalDocument: Document | null, newDocument: Document | null) {
@@ -60,7 +71,7 @@ export class DocumentService {
 
     newDocument.id = originalDocument.id;
     this.documents[pos] = newDocument;
-    this.documentListChangedEvent.next(this.documents.slice());
+    this.storeDocuments();
   }
 
   deleteDocument(document: Document | null) {
@@ -74,6 +85,20 @@ export class DocumentService {
     }
 
     this.documents.splice(pos, 1);
-    this.documentListChangedEvent.next(this.documents.slice());
+    this.storeDocuments();
+  }
+
+  storeDocuments() {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const jsonDocuments = JSON.stringify(this.documents);
+
+    this.httpClient.put(this.documentsUrl, jsonDocuments, { headers }).subscribe(
+      () => {
+        this.documentListChangedEvent.next(this.documents.slice());
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
   }
 }

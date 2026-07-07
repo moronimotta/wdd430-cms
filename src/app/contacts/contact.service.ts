@@ -1,22 +1,33 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Contact } from './contact.model';
-import { MOCKCONTACTS } from './MOCKCONTACTS';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ContactService {
+  private readonly contactsUrl = 'https://wdd430-26dff-default-rtdb.firebaseio.com/contacts.json';
+
   contacts: Contact[] = [];
   contactListChangedEvent = new Subject<Contact[]>();
   maxContactId: number = 0;
 
-  constructor() {
-    this.contacts = MOCKCONTACTS;
-    this.maxContactId = this.getMaxId();
-  }
+  constructor(private httpClient: HttpClient) {}
 
   getContacts(): Contact[] {
+    this.httpClient.get<Contact[]>(this.contactsUrl).subscribe(
+      (contacts: Contact[]) => {
+        this.contacts = contacts ?? [];
+        this.maxContactId = this.getMaxId();
+        this.contacts.sort((firstContact: Contact, secondContact: Contact) => firstContact.name.localeCompare(secondContact.name));
+        this.contactListChangedEvent.next(this.contacts.slice());
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
+
     return this.contacts.slice();
   }
 
@@ -45,7 +56,7 @@ export class ContactService {
     this.maxContactId++;
     newContact.id = String(this.maxContactId);
     this.contacts.push(newContact);
-    this.contactListChangedEvent.next(this.contacts.slice());
+    this.storeContacts();
   }
 
   updateContact(originalContact: Contact | null, newContact: Contact | null) {
@@ -60,7 +71,7 @@ export class ContactService {
 
     newContact.id = originalContact.id;
     this.contacts[pos] = newContact;
-    this.contactListChangedEvent.next(this.contacts.slice());
+    this.storeContacts();
   }
 
   deleteContact(contact: Contact | null) {
@@ -74,6 +85,20 @@ export class ContactService {
     }
 
     this.contacts.splice(pos, 1);
-    this.contactListChangedEvent.next(this.contacts.slice());
+    this.storeContacts();
+  }
+
+  storeContacts() {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const jsonContacts = JSON.stringify(this.contacts);
+
+    this.httpClient.put(this.contactsUrl, jsonContacts, { headers }).subscribe(
+      () => {
+        this.contactListChangedEvent.next(this.contacts.slice());
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
   }
 }

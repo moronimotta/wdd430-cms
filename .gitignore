@@ -38,6 +38,10 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+.firebase/
+.agents/
+skills-lock.json
+lesson9Files/
 
 # System files
 .DS_Store

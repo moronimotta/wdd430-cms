@@ -8,6 +8,12 @@
 			<input id="subject" #subject type="text" class="form-control" />
 		</div>
 		<div class="form-group">
+			<label for="sender">Sender</label>
+			<select id="sender" #sender class="form-control" [value]="currentSender">
+				<option *ngFor="let contact of contacts" [value]="contact._id || contact.id">{{ contact.name }}</option>
+			</select>
+		</div>
+		<div class="form-group">
 			<label for="msgText">Message</label>
 			<textarea id="msgText" #msgText class="form-control" rows="3"></textarea>
 		</div>

@@ -7,21 +7,18 @@ import { Contact } from './contact.model';
   providedIn: 'root',
 })
 export class ContactService {
-  private readonly contactsUrl = 'https://wdd430-26dff-default-rtdb.firebaseio.com/contacts.json';
+  private readonly contactsUrl = 'http://localhost:3000/contacts';
 
   contacts: Contact[] = [];
   contactListChangedEvent = new Subject<Contact[]>();
-  maxContactId: number = 0;
 
   constructor(private httpClient: HttpClient) {}
 
   getContacts(): Contact[] {
-    this.httpClient.get<Contact[]>(this.contactsUrl).subscribe(
-      (contacts: Contact[]) => {
-        this.contacts = contacts ?? [];
-        this.maxContactId = this.getMaxId();
-        this.contacts.sort((firstContact: Contact, secondContact: Contact) => firstContact.name.localeCompare(secondContact.name));
-        this.contactListChangedEvent.next(this.contacts.slice());
+    this.httpClient.get<{ message: string; contacts: Contact[] }>(this.contactsUrl).subscribe(
+      (responseData) => {
+        this.contacts = responseData.contacts ?? [];
+        this.sortAndSend();
       },
       (error: any) => {
         console.log(error);
@@ -32,7 +29,7 @@ export class ContactService {
   }
 
   getContact(id: string): Contact | null {
-    return this.contacts.find((contact) => contact.id === id) ?? null;
+    return this.contacts.find((contact) => contact.id === id || contact._id === id) ?? null;
   }
 
   getMaxId(): number {
@@ -53,10 +50,19 @@ export class ContactService {
       return;
     }
 
-    this.maxContactId++;
-    newContact.id = String(this.maxContactId);
-    this.contacts.push(newContact);
-    this.storeContacts();
+    newContact.id = '';
+
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    this.httpClient.post<{ message: string; contact: Contact }>(this.contactsUrl, newContact, { headers }).subscribe(
+      (responseData) => {
+        this.contacts.push(responseData.contact);
+        this.sortAndSend();
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
   }
 
   updateContact(originalContact: Contact | null, newContact: Contact | null) {
@@ -64,14 +70,24 @@ export class ContactService {
       return;
     }
 
-    const pos = this.contacts.indexOf(originalContact);
+    const pos = this.contacts.findIndex((contact) => contact.id === originalContact.id || contact._id === originalContact._id);
     if (pos < 0) {
       return;
     }
 
     newContact.id = originalContact.id;
-    this.contacts[pos] = newContact;
-    this.storeContacts();
+
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    this.httpClient.put(this.contactsUrl + '/' + originalContact.id, newContact, { headers }).subscribe(
+      () => {
+        this.contacts[pos] = newContact;
+        this.sortAndSend();
+      },
+      (error: any) => {
+        console.log(error);
+      }
+    );
   }
 
   deleteContact(contact: Contact | null) {
@@ -79,26 +95,24 @@ export class ContactService {
       return;
     }
 
-    const pos = this.contacts.indexOf(contact);
+    const pos = this.contacts.findIndex((currentContact) => currentContact.id === contact.id || currentContact._id === contact._id);
     if (pos < 0) {
       return;
     }
 
-    this.contacts.splice(pos, 1);
-    this.storeContacts();
-  }
-
-  storeContacts() {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const jsonContacts = JSON.stringify(this.contacts);
-
-    this.httpClient.put(this.contactsUrl, jsonContacts, { headers }).subscribe(
+    this.httpClient.delete(this.contactsUrl + '/' + contact.id).subscribe(
       () => {
-        this.contactListChangedEvent.next(this.contacts.slice());
+        this.contacts.splice(pos, 1);
+        this.sortAndSend();
       },
       (error: any) => {
         console.log(error);
       }
     );
+  }
+
+  private sortAndSend() {
+    this.contacts.sort((firstContact: Contact, secondContact: Contact) => firstContact.name.localeCompare(secondContact.name));
+    this.contactListChangedEvent.next(this.contacts.slice());
   }
 }
